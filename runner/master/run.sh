@@ -718,7 +718,7 @@ else
   CMD="${CMD} --log-junit /shared/log.junit"
   CMD="${CMD} ${PHPUNIT_FILTER}"
   CMD="${CMD} ${PHPUNIT_SUITE}"
-  CMD="${CMD} --verbose"
+  CMD="${CMD} --verbose --testdox"
 
   ITER=0
   EXITCODE=0
