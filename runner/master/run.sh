@@ -27,6 +27,38 @@ export COMPOSERCACHE="${COMPOSERCACHE:-${CACHEDIR}/composer}"
 export CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
 export OUTPUTDIR="${WORKSPACE}"/"${BUILD_ID}"
 export ENVIROPATH="${OUTPUTDIR}"/environment.list
+# The PLUGINSTOINSTALL variable could be set to install external plugins in the CODEDIR folder. The following information is needed
+# for each plugin: gitrepo, folder and branch (optional). The plugin fields should be separated by "|" and each plugin should
+# be separated using ";": "gitrepoplugin1|gitfolderplugin1|gitbranchplugin1;gitrepoplugin2|gitfolderplugin2|gitbranchplugin2[...]"
+# Example: "https://github.com/moodlehq/moodle-local_mobile.git|local/mobile|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git|blocks/configurable_reports"
+export PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
+
+if [ -n "$PLUGINSTOINSTALL" ];
+then
+  echo ">>> startsection Install plugins <<<"
+  echo "============================================================================"
+  IFS=';' read -ra PLUGINS <<< "$PLUGINSTOINSTALL"
+  for PLUGIN in "${PLUGINS[@]}";
+  do
+    PLUGINGITREPO=$(echo "$PLUGIN" | cut -f1 -d'|')
+    PLUGINFOLDER=$(echo "$PLUGIN" | cut -f2 -d'|')
+    PLUGINBRANCH=$(echo "$PLUGIN" | cut -f3 -d'|')
+
+    if [ -n "${PLUGINBRANCH}" ]
+    then
+      # Only download this branch.
+      PLUGINBRANCH="-b ${PLUGINBRANCH} --single-branch"
+    fi
+
+    # Clone the plugin repository in the defined folder.
+    git clone ${PLUGINBRANCH} ${PLUGINGITREPO} "${CODEDIR}/${PLUGINFOLDER}"
+    echo
+  done
+  unset IFS
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
+  echo
+fi
 
 # Which PHP Image to use.
 export PHP_VERSION="${PHP_VERSION:-7.1}"
